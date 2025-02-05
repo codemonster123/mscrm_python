@@ -8,7 +8,8 @@ import CustomerServiceRequestRepository
 
 def get_postprocess_initialization_context():
     context = PostProcessInitContext(
-
+        success_log_filename=os.environ['POSTPROCESS_FAILED_LOG_FILENAME'],
+        failed_log_filename=os.environ['POSTPROCESS_FAILED_LOG_FILENAME']
     )
     return context
 
