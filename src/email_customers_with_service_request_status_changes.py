@@ -1,10 +1,11 @@
 import sys
 import os
 import PostProcessInitContext
-from PostProcess import PostProcess
+import PostProcess
 import SmtpServerInitContext
 import SmtpServer
-import CustomerServiceRequestRepository
+import RepositoryInitContext
+import IncidentRepository
 
 def get_postprocess_initialization_context():
     context = PostProcessInitContext(
@@ -24,32 +25,30 @@ def get_smtp_initialization_context():
     )
     return context
 
+def get_odbc_initializaton_context():
+    context = RepositoryInitContext(
+        server=os.environ['ODBC_SERVER'],
+        database=os.environ['ODBC_DATABASE'],
+        username=os.environ['ODBC_NAME'],
+        password=os.environ['ODBC_PASSWORD']
+    )
+    return context
 
-def get_smtp_server(init_context):
-    return SmtpServer(init_context)
+
+def get_incidents_to_email():
+    odbc_init_context = get_odbc_initializaton_context()
+    incident_repo = IncidentRepository(odbc_init_context)
+    return incident_repo.get_incidents_with_status_changes()
 
 
-def get_customer_service_requests_to_email():
-    cust_repo = CustomerServiceRequestRepository()
-    return cust_repo.get_customers_with_service_request_status_change()
-
-
-def get_content_body_from_customer(customer_service_request):
+def get_content_body_from_incident(incident):
     body = f"""\
-    Dear {customer_service_request.first_name + ' ' +customer_service_request.last_name},
+    Dear {incident.contact_name},
 
-    The status of your submitted request, '{customer_service_request.service_request_descr}', 
-    has changed to {customer_service_request.service_request_status}.
+    The status of your submitted request, ticket# {incident.ticketnumber} '{incident.title}', 
+    has changed to {incident.status} (from {incident.prior_status}).
     """
     return body
-
-
-def process_after_sent_successfully(customer_service_request):
-    customer_service_request.mark_as_sent()
-
-
-def process_after_failure_to_send(customer_service_request, e):
-    customer_service_request.mark_as_failed_to_send()
 
 
 def main():
@@ -58,21 +57,21 @@ def main():
         postprocess = PostProcess(postprocess_init_context)
 
         smtp_init_context = get_smtp_initialization_context()
-        smtp_server = get_smtp_server(smtp_init_context)
+        smtp_server = SmtpServer(smtp_init_context)
 
-        for customer_service_request in get_customer_service_requests_to_email():
+        for incident in get_incidents_to_email():
             try:
                 smtp_server.send(  
-                    to_name = customer_service_request.first_name + ' ' + customer_service_request.last_name,
-                    to_addr = customer_service_request.email_addr,
-                    subject = f"Status of request '{customer_service_request.service_request_descr}' has changed to '{customer_service_request.service_request_status}'",
-                    body = get_content_body_from_customer(customer_service_request)
+                    to_name = incident.contact_name,
+                    to_addr = incident.email_addr,
+                    subject = f"Status of ticket #{incident.ticketnumber} '{incident.title}' has changed to '{incident.status}'",
+                    body = get_content_body_from_incident(incident)
                 )
 
-                postprocess.mark_as_sent(customer_service_request)
+                postprocess.mark_as_sent(incident)
 
             except Exception as e:
-                postprocess.mark_as_failed_to_send(customer_service_request, e)
+                postprocess.mark_as_failed_to_send(incident, e)
                 
     except Exception as e:
         # Hard error related to environment, configuration, or securuity

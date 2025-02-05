@@ -2,7 +2,6 @@ import smtplib
 from email.message import EmailMessage
 from email.utils import formataddr
 
-from SmtpServerInitContext import SmtpServerInitContext
 class SmtpServer():
     def __init__(self, context):
         self.from_email_addr = context.from_email_addr
@@ -11,7 +10,7 @@ class SmtpServer():
         self.smtp_server.starttls()
         self.smtp_server.login(user=context.user_id, password=context.password)
 
-    def __destroy__(self):
+    def __del__(self):
         self.smtp_server.quit()
 
     def send(self, to_name, to_addr, subject, body):

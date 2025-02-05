@@ -12,7 +12,7 @@ class PostProcess():
         self.success_file = open(self.success_log_filename, 'w', newline='')
         self.failed_file = open(self.failed_log_filename, 'w', newline='')
 
-        field_names = ['email_addr', 'first_name', 'last_name', 'account_id', 'service_request_descr','service_request_status','email_result']
+        field_names = ['email_addr', 'contact_name', 'title','status','incidentid','email_result']
         self.csv_success_writer = csv.writer(self.success_file)
         self.csv_success_writer.writerow(field_names)
 
@@ -27,31 +27,29 @@ class PostProcess():
             self.failed_file.close()
 
 
-    def mark_as_sent(self, customer_service_request):
+    def mark_as_sent(self, incident):
         if self.success_log_filename == None:
             raise Exception("Successful log filename not initialized")
 
         self.csv_success_writer.writerow((
-            customer_service_request.email_addr,
-            customer_service_request.first_name,
-            customer_service_request.last_name,
-            customer_service_request.account_id,
-            customer_service_request.service_request_descr,
-            customer_service_request.service_request_status,
-            ''
+            incident.email_addr,
+            incident.contact_name,
+            incident.title,
+            incident.status,
+            incident.incidentid,
+            'sucess'
             ))
         
 
-    def mark_as_failed_to_send(self, customer_service_request, e):
+    def mark_as_failed_to_send(self, incident, e):
         if self.failed_log_filename == None:
             raise Exception("Failed log filename not initialized.")
         
         self.csv_success_writer.writerow((
-            customer_service_request.email_addr,
-            customer_service_request.first_name,
-            customer_service_request.last_name,
-            customer_service_request.account_id,
-            customer_service_request.service_request_descr,
-            customer_service_request.service_request_status,
+            incident.email_addr,
+            incident.contact_name,
+            incident.title,
+            incident.status,
+            incident.incidentid,
             e
             ))
