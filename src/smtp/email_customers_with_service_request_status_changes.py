@@ -1,11 +1,14 @@
+from pathlib import Path
+from sys import path
+path.append(str(Path(__file__).parent.parent)+'/')
 import sys
 import os
-import PostProcessInitContext
-import PostProcess
-import SmtpServerInitContext
-import SmtpServer
-import RepositoryInitContext
-import IncidentRepository
+import smtp.PostProcessInitContext as PostProcessInitContext
+import smtp.PostProcess as PostProcess
+import smtp.SmtpServerInitContext as SmtpServerInitContext
+import smtp.SmtpServer as SmtpServer
+import smtp.RepositoryInitContext as RepositoryInitContext
+import smtp.IncidentRepository as IncidentRepository
 
 def get_postprocess_initialization_context():
     context = PostProcessInitContext(

@@ -1,23 +1,34 @@
 class RepositoryInitContext():
-    def __init__(self, server, database, username, password):
-        self.server = server
-        self.database = database
-        self.username = username
-        self.password = password
+    def __init__(self, server: str, database: str, username: str, password: str):
+        if not server:
+            raise ValueError("Server is missing")
+        self._server = server
+
+        if not database:
+            raise ValueError("Database is missing")
+        self._database = database
+        
+        if not username:
+            raise ValueError("Username is missing")
+        self._username = username
+        
+        if not password:
+            raise ValueError("Password is missing")
+        self._password = password
     
     @property
     def server(self):
-        return self.server
+        return self._server
     
     @property
     def database(self):
-        return self.database
+        return self._database
     
     @property
     def username(self):
-        return self.username
+        return self._username
     
     @property
     def password(self):
-        return self.password
+        return self._password
     
