@@ -3,16 +3,16 @@ from sys import path
 path.append(str(Path(__file__).parent.parent)+'/')
 import sys
 import os
-import smtp.PostProcessInitContext as PostProcessInitContext
-import smtp.PostProcess as PostProcess
-import smtp.SmtpServerInitContext as SmtpServerInitContext
-import smtp.SmtpServer as SmtpServer
-import smtp.RepositoryInitContext as RepositoryInitContext
-import smtp.IncidentRepository as IncidentRepository
+from smtp.PostProcessInitContext import PostProcessInitContext
+from smtp.PostProcess import PostProcess
+from smtp.SmtpServerInitContext import SmtpServerInitContext
+from smtp.SmtpServer import SmtpServer
+from smtp.RepositoryInitContext import RepositoryInitContext
+from smtp.IncidentRepository import IncidentRepository
 
 def get_postprocess_initialization_context():
     context = PostProcessInitContext(
-        success_log_filename=os.environ['POSTPROCESS_FAILED_LOG_FILENAME'],
+        success_log_filename=os.environ['POSTPROCESS_SUCCESS_LOG_FILENAME'],
         failed_log_filename=os.environ['POSTPROCESS_FAILED_LOG_FILENAME']
     )
     return context
@@ -20,7 +20,7 @@ def get_postprocess_initialization_context():
 
 def get_smtp_initialization_context():
     context = SmtpServerInitContext(
-        port=os.environ['SMTP_PORT'], 
+        port=int(os.environ['SMTP_PORT']), 
         hostname=os.environ['SMTP_HOSTNAME'], 
         from_email_addr=os.environ['SMTP_FROM_EMAIL_ADDR'], 
         user_id=os.environ['SMTP_USER_ID'], 
@@ -28,7 +28,7 @@ def get_smtp_initialization_context():
     )
     return context
 
-def get_odbc_initializaton_context():
+def get_odbc_initialization_context():
     context = RepositoryInitContext(
         server=os.environ['ODBC_SERVER'],
         database=os.environ['ODBC_DATABASE'],
@@ -39,7 +39,7 @@ def get_odbc_initializaton_context():
 
 
 def get_incidents_to_email():
-    odbc_init_context = get_odbc_initializaton_context()
+    odbc_init_context = get_odbc_initialization_context()
     incident_repo = IncidentRepository(odbc_init_context)
     return incident_repo.get_incidents_with_status_changes()
 
@@ -77,12 +77,14 @@ def main():
                 postprocess.mark_as_failed_to_send(incident, e)
                 
     except Exception as e:
-        # Hard error related to environment, configuration, or securuity
-        print(e.message)
-        sys.exit(-1)
+        # Hard error related to environment, configuration, or security
+        print(f"Encountered error: {e}")
+        if __name__ == '__main__':
+            sys.exit(-1)
 
     # Did not encounter errors
-    sys.exit(0)
+    if __name__ == '__main__':
+        sys.exit(0)
 
 
 if __name__ == '__main__':
