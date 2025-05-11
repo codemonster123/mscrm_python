@@ -20,15 +20,15 @@ class PostProcess():
         self.csv_failed_writer.writerow(field_names)
 
     def __del__(self):
-        if self.success_file and not self.success_file.closed():
+        if self.success_file and not self.success_file.closed:
             self.success_file.close()
 
-        if self.failed_file and not self.failed_file.closed():
+        if self.failed_file and not self.failed_file.closed:
             self.failed_file.close()
 
 
     def mark_as_sent(self, incident):
-        if self.success_log_filename == None:
+        if not self.success_log_filename:
             raise Exception("Successful log filename not initialized")
 
         self.csv_success_writer.writerow((
@@ -42,10 +42,10 @@ class PostProcess():
         
 
     def mark_as_failed_to_send(self, incident, e):
-        if self.failed_log_filename == None:
+        if not self.failed_log_filename:
             raise Exception("Failed log filename not initialized.")
         
-        self.csv_success_writer.writerow((
+        self.csv_failed_writer.writerow((
             incident.email_addr,
             incident.contact_name,
             incident.title,
