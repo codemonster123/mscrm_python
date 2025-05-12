@@ -12,11 +12,14 @@ Don't hardcode SQL inside business domain calls. Instead, express SQL in this re
 for looser coupling.
 """
 class IncidentRepository():
-    def __init__(self, context: RepositoryInitContext):
-        self.server = context.server # Name of SQL Server instance
-        self.database = context.database # Name of the CRM database
-        self.username = context.username
-        self.password = context.password # Assume we are using standard security with SQL Server
+    def __init__(self, init_context: RepositoryInitContext):
+        if not isinstance(init_context, RepositoryInitContext):
+            raise TypeError("Parameter init_context needs to be of type RepositoryInitContext")
+            
+        self.server = init_context.server # Name of SQL Server instance
+        self.database = init_context.database # Name of the CRM database
+        self.username = init_context.username
+        self.password = init_context.password # Assume we are using standard security with SQL Server
 
     """
     The incident.new_statuscode_change_notified_cust_on field represents the date the contact on the service ticket

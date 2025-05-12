@@ -2,11 +2,8 @@ from sys import path
 from pathlib import Path; 
 path.append(str(Path(__file__).parent.parent)+'/src/')
 
-from smtp.IncidentRepository import IncidentRepository
-from smtp.Incident import Incident
 from smtp.PostProcessInitContext import PostProcessInitContext
 from pytest import raises
-from unittest.mock import patch
 
 def test_success_log_filename_invalid():
     # Make sure success_log_filename is not missing

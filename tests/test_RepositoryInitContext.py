@@ -2,11 +2,8 @@ from sys import path
 from pathlib import Path; 
 path.append(str(Path(__file__).parent.parent)+'/src/')
 
-from smtp.IncidentRepository import IncidentRepository
-from smtp.Incident import Incident
 from smtp.RepositoryInitContext import RepositoryInitContext
 from pytest import raises
-from unittest.mock import patch
 
 def test_server_invalid():
     # Make sure server parameter is not missing

@@ -1,5 +1,7 @@
 from pathlib import Path
 from sys import path, exit
+
+from smtp.Incident import Incident
 path.append(str(Path(__file__).parent.parent)+'/') # Need to include top level folder for the source of classes used in this script
 
 from os import environ # Look up environment variables for operating parameters
@@ -46,7 +48,10 @@ def get_incidents_to_email():
     return incident_repo.get_incidents_with_status_changes()
 
 # The body content of each email relies on information contained in an Incident class.
-def get_content_body_from_incident(incident):
+def get_content_body_from_incident(incident: Incident):
+    if not isinstance(incident, Incident):
+        raise TypeError("Parameter incident needs to be of type Incident.")
+
     body = f"""\
     Dear {incident.contact_name},
 

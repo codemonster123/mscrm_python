@@ -3,9 +3,9 @@ from pathlib import Path;
 path.append(str(Path(__file__).parent.parent)+'/src/')
 
 from smtp.IncidentRepository import IncidentRepository
-from smtp.Incident import Incident
 from smtp.RepositoryInitContext import RepositoryInitContext
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch 
+from pytest import raises
 
 def test_properties_returned():
     # Parameters passed in RepositoryInitContext should appear as respective properties in IncidentRepository
@@ -36,3 +36,8 @@ def test_get_incidents_with_status_changes(mock_connect):
     assert fetched_incident.prior_status == incident['new_prior_statuscode']
     assert fetched_incident.status == incident['statuscode']
     assert fetched_incident.ticketnumber == incident['ticketnumber']
+
+def test_not_initialized():
+    with raises(TypeError) as ex_info:
+        IncidentRepository(None)
+    assert 'of type ' in ex_info.value.args[0]

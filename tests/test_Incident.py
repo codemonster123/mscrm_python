@@ -2,7 +2,6 @@ from sys import path
 from pathlib import Path; 
 path.append(str(Path(__file__).parent.parent)+'/src/')
 from smtp.Incident import Incident
-import pytest
 
 def test_properties_returned():
     incident = Incident(incidentid='incident_1', 

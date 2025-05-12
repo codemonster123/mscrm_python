@@ -4,6 +4,7 @@ path.append(str(Path(__file__).parent.parent)+'/') # Need to add path for where 
 
 from csv import writer # Use Csv writers to log the result of both, successes and failures of some critical activity
 from smtp.PostProcessInitContext import PostProcessInitContext
+from smtp.Incident import Incident
 
 """
 This class encapsulates the logic of how and where to store logs of successes and failures of some critical activity.
@@ -43,7 +44,10 @@ class PostProcess():
             self.failed_file.close() # Ensure 'failed' output file has all the buffered data, by closing the if noet yet closed
 
     # Log incident as a success after successfully emailing to contact on the the service incident
-    def mark_as_sent(self, incident):
+    def mark_as_sent(self, incident: Incident):
+        if not isinstance(incident, Incident):
+            raise TypeError("Parameter incident needs to be of type Incident")
+
         if not self.success_log_filename:
             raise Exception("Successful log filename not initialized")
 
@@ -58,7 +62,10 @@ class PostProcess():
             ))
         
     # Log incident as a failure after failing to email to contact on the service incident
-    def mark_as_failed_to_send(self, incident, e):
+    def mark_as_failed_to_send(self, incident: Incident, e):
+        if not isinstance(incident, Incident):
+            raise TypeError("Parameter incident needs to be of type Incident")
+
         if not self.failed_log_filename:
             raise Exception("Failed log filename not initialized.")
         

@@ -2,7 +2,7 @@
 This class is used to store service incidents from the database
 """
 class Incident():
-    def __init__(self, incidentid, email_addr, contact_name, title, prior_status, status, ticketnumber):
+    def __init__(self, incidentid: str, email_addr: str, contact_name: str, title: str, prior_status: str, status, ticketnumber: str):
         self.incidentid = incidentid    # This is the system-generated id in the CRM system, not friendly/useful enough 
                                         # to show to the contact on the service incident
         self.email_addr = email_addr # Assume this is the email address of the main contact for the service incident
