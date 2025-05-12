@@ -14,6 +14,7 @@ from smtp.email_customers_with_service_request_status_changes import (
 from unittest.mock import (patch,MagicMock)
 from smtp.Incident import Incident
 from smtp.PostProcess import PostProcess
+from smtplib import SMTP
 
 def test_get_postprocess_initialization_context():
     environ['POSTPROCESS_SUCCESS_LOG_FILENAME'] = 'successfile'
@@ -46,7 +47,7 @@ def test_odbc_initialization_context():
     assert ctx.username == 'some_username'
     assert ctx.password == 'some_password'
 
-@patch('pyodbc.connect')
+@patch('smtp.IncidentRepository.connect')
 def test_get_incidents_to_email(mock_connect):
     environ['ODBC_SERVER'] = 'some_server'
     environ['ODBC_DATABASE'] = 'some_database'
@@ -91,10 +92,8 @@ def test_get_content_body_from_incident():
     assert 'changed to some_status' in body
     assert 'from some_prior_status' in body
 
-@patch('smtplib.SMTP')  # Assume initialization of internal smtp class went well, just want to make sure 
-                        # internal send_message is called
-@patch('pyodbc.connect')
-def test_main(mock_connect, mock_smtp):
+@patch('smtp.IncidentRepository.connect')
+def test_main(mock_connect):
     environ['POSTPROCESS_SUCCESS_LOG_FILENAME'] = 'successfile'
     environ['POSTPROCESS_FAILED_LOG_FILENAME'] = 'failedfile'
     environ['SMTP_PORT'] = '25'
@@ -117,12 +116,13 @@ def test_main(mock_connect, mock_smtp):
             'ticketnumber': 'some_ticketnumber'
         }
     ]
-    main()
+    with patch.multiple(SMTP,starttls=MagicMock(side_effect=lambda : None),
+                        login=MagicMock(side_effect=lambda user, password: None),
+                        send_message=MagicMock(side_effect=lambda msg: None)) as mock_smtp:
+        main()
 
-@patch('smtplib.SMTP')  # Assume initialization of internal smtp class went well, just want to make sure 
-                        # internal send_message is called
-@patch('pyodbc.connect')
-def test_main_fail_sending_email(mock_connect, mock_smtp):
+@patch('smtp.IncidentRepository.connect')
+def test_main_fail_sending_email(mock_connect):
     environ['POSTPROCESS_SUCCESS_LOG_FILENAME'] = 'successfile'
     environ['POSTPROCESS_FAILED_LOG_FILENAME'] = 'failedfile'
     environ['SMTP_PORT'] = '25'
@@ -134,7 +134,6 @@ def test_main_fail_sending_email(mock_connect, mock_smtp):
     environ['ODBC_DATABASE'] = 'some_database'
     environ['ODBC_NAME'] = 'some_username'
     environ['ODBC_PASSWORD'] = 'some_password'
-    mock_smtp().send_message = MagicMock(side_effect=Exception("Failed to send"))
     mock_connect().cursor().fetchall.return_value = [
         {
             'incidentid': 'some_incidentid',
@@ -146,12 +145,13 @@ def test_main_fail_sending_email(mock_connect, mock_smtp):
             'ticketnumber': 'some_ticketnumber'
         }
     ]
-    main()
+    with patch.multiple(SMTP,starttls=MagicMock(side_effect=lambda : None),
+                        login=MagicMock(side_effect=lambda user, password: None),
+                        send_message=MagicMock(side_effect=Exception("Failed to send"))) as mock_smtp:
+        main()
 
-@patch('smtplib.SMTP')  # Assume initialization of internal smtp class went well, just want to make sure 
-                        # internal send_message is called
-@patch('pyodbc.connect')
-def test_main_fail_mark_failed_to_send(mock_connect, mock_smtp):
+@patch('smtp.IncidentRepository.connect')
+def test_main_fail_mark_failed_to_send(mock_connect):
     environ['POSTPROCESS_SUCCESS_LOG_FILENAME'] = 'successfile'
     environ['POSTPROCESS_FAILED_LOG_FILENAME'] = 'failedfile'
     environ['SMTP_PORT'] = '25'
@@ -163,7 +163,6 @@ def test_main_fail_mark_failed_to_send(mock_connect, mock_smtp):
     environ['ODBC_DATABASE'] = 'some_database'
     environ['ODBC_NAME'] = 'some_username'
     environ['ODBC_PASSWORD'] = 'some_password'
-    mock_smtp().send_message = MagicMock(side_effect=Exception("Failed to send"))
     mock_connect().cursor().fetchall.return_value = [
         {
             'incidentid': 'some_incidentid',
@@ -176,4 +175,7 @@ def test_main_fail_mark_failed_to_send(mock_connect, mock_smtp):
         }
     ]
     with patch.object(PostProcess,'mark_as_failed_to_send', side_effect=Exception('test')):
-        main()
+        with patch.multiple(SMTP,starttls=MagicMock(side_effect=lambda : None),
+                            login=MagicMock(side_effect=lambda user, password: None),
+                            send_message=MagicMock(side_effect=Exception("Failed to send"))) as mock_smtp:
+            main()

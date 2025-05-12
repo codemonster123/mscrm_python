@@ -1,4 +1,4 @@
-import smtplib # SMTP functionality in the standard Python library is adequate for our needs
+from smtplib import SMTP # SMTP functionality in the standard Python library is adequate for our needs
 from email.message import EmailMessage # Use a convenience class for packaging individual emails for sending
 from email.utils import formataddr
 
@@ -17,7 +17,7 @@ class SmtpServer():
         assert isinstance(context, SmtpServerInitContext)
         self.from_email_addr = context.from_email_addr
 
-        self.smtp_server = smtplib.SMTP(port=context.port, local_hostname=context.hostname)
+        self.smtp_server = SMTP(port=context.port, local_hostname=context.hostname)
         self.smtp_server.starttls() # Insist on using TLS security when for all SMTP communication, as best practice.
         self.smtp_server.login(user=context.user_id, password=context.password)
 

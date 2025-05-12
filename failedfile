@@ -1,1 +1,2 @@
 email_addr,contact_name,title,status,incidentid,email_result
+some@email.com,some_contact,some_title,some_status,some_incidentid,Failed to send

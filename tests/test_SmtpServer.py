@@ -2,10 +2,11 @@ from sys import path
 from pathlib import Path
 path.append(str(Path(__file__).parent.parent)+'/src/')
 
+from smtplib import SMTP
 from smtp.SmtpServerInitContext import SmtpServerInitContext
 from smtp.SmtpServer import SmtpServer
-import pytest
-from unittest.mock import patch
+from pytest import raises
+from unittest.mock import patch, MagicMock
 
 def test_send_failure():
     # In case initialization for SmtpServer is faulty, make sure send method fails with expected exception
@@ -15,14 +16,14 @@ def test_send_failure():
         smtp_server.__setattr__('smtp_server',None) # In the unusual case of a bad code revision
                                                     # that leaves critical internal attribute uninitialized
         # Bad initialization of internal smtp_server should result in an exception when send method is called
-        with pytest.raises(Exception) as ex_info:
+        with raises(Exception) as ex_info:
             smtp_server.send(to_name='someone',to_addr='someone@email.com', subject='some_subject', body='some_body')
         assert 'Smtp server is not initialized' in ex_info.value.args[0]
 
-@patch('smtplib.SMTP')  # Assume initialization of internal smtp class went well, just want to make sure 
-                        # internal send_message is called
-def test_send_success(mock_smtp):
+def test_send_success():
     smtp_context = SmtpServerInitContext(80,'test_server','me@email.com', 'some_user_id', 'some_password')
-    smtp_server = SmtpServer(smtp_context)
-    smtp_server.send(to_name='someone',to_addr='someone@email.com', subject='some_subject', body='some_body')
-    mock_smtp.return_value.send_message.assert_called() # Able to reach end of code, calling send_message.
+    with patch.multiple(SMTP, starttls=MagicMock(side_effect=lambda :None),
+                        login=MagicMock(side_effect=lambda user, password: None),
+                        send_message=MagicMock(side_effect=lambda msg: None)) as mock_smtp:
+        smtp_server = SmtpServer(smtp_context)
+        smtp_server.send(to_name='someone',to_addr='someone@email.com', subject='some_subject', body='some_body')

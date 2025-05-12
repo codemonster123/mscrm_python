@@ -1,5 +1,5 @@
 from pathlib import Path
-from sys import path
+from sys import path, exit
 path.append(str(Path(__file__).parent.parent)+'/') # Need to include top level folder for the source of classes used in this script
 
 from os import environ # Look up environment variables for operating parameters
@@ -89,11 +89,11 @@ def main():
         # Hard error related to environment, configuration, or security
         print(f"Encountered error: {e}")
         if __name__ == '__main__':
-            sys.exit(-1)
+            exit(-1)
 
     # Did not encounter errors
     if __name__ == '__main__':
-        sys.exit(0)
+        exit(0)
 
 
 if __name__ == '__main__':

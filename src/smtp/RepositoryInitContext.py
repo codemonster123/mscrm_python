@@ -1,12 +1,17 @@
+"""
+This is a convenience class for initialzing the IncidentRepository class.
+Avoid using setters for this class, to keep instance immutable, to reduce
+chance of bugs from inadvertent mutation.
+"""
 class RepositoryInitContext():
     def __init__(self, server: str, database: str, username: str, password: str):
         if not server:
             raise ValueError("Server is missing")
-        self._server = server
+        self._server = server # SQL Server instance name
 
         if not database:
             raise ValueError("Database is missing")
-        self._database = database
+        self._database = database # Database where CRM data resides
         
         if not username:
             raise ValueError("Username is missing")
@@ -14,7 +19,7 @@ class RepositoryInitContext():
         
         if not password:
             raise ValueError("Password is missing")
-        self._password = password
+        self._password = password # 
     
     @property
     def server(self):
